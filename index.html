@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        /*Estilos añadidos*/
+        .txtResultado {
+            border: 1px solid black;
+        }
+
+        .grafica {
+            display: flex;
+            background-color: gray;
+            text-align: center;
+            width: 100%;
+        }
+
+        .graficaActive {
+            color: white;
+            width: 0%;
+            transition: width 1s;
+        }
+
+        .graficaGanadas {
+            background: darkred;
+        }
+
+        .graficaPerdidas {
+            background: darkblue;
+        }
+
+        .graficaEmpatadas {
+            background: darkgreen;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="btnPiedra">Piedra ✊</button>
+    <button class="btnPapel">Papel ✋</button>
+    <button class="btnTijera">Tijera 🤞</button>
+
+    <!--BOTON RESET-->
+    <button class="btnReset">Reset</button>
+
+    <!--BOTON AUTOPLAY-->
+    <button class="btnAutoPlay">AutoPlay</button>
+
+    <!--BOTON RESULTADO-->
+    <div class="txtResultado">
+        <p>Ganadas: <span id="ganadas">0</span></p>
+        <p>Perdidas: <span id="perdidas">0</span></p>
+        <p>Empatadas: <span id="empatadas">0</span></p>
+    </div>
+    <hr>
+
+
+    <h3>Gráfica:</h3>
+    <div class="grafica">
+        <div class="graficaActive graficaGanadas">Ganadas</div>
+        <div class="graficaActive graficaPerdidas">Perdidas</div>
+        <div class="graficaActive graficaEmpatadas">Empatadas</div>
+    </div>
+    <hr />
+
+    <h3>Stats:</h3>
+    <div class="txtStats"></div>
+    <hr />
+
+
+    <script>
+        //const opciones que se encuentran para jugar
+        const opciones = ['piedra', 'papel', 'tijera'];
+
+        //constantes de piedra, papel, tijera
+        const btnPiedra = document.querySelector(".btnPiedra");
+        const btnPapel = document.querySelector(".btnPapel");
+        const btnTijera = document.querySelector(".btnTijera");
+
+        //EventListeners 
+        btnPiedra.addEventListener("click", () => { jugar("piedra") });
+        btnPapel.addEventListener("click", () => { jugar("papel") });
+        btnTijera.addEventListener("click", () => { jugar("tijera") });
+
+        //constantes de AutoPlay + eventListener
+        const btnAutoPlay = document.querySelector(".btnAutoPlay");
+        btnAutoPlay.addEventListener("click", () => { autoPlay() });
+
+
+
+        const txtGanadas = document.getElementById("ganadas");
+        const txtPerdidas = document.getElementById("perdidas");
+        const txtEmpatadas = document.getElementById("empatadas");
+
+        const txtResultado = document.querySelector(".txtResultado");
+        const txtStats = document.querySelector(".txtStats");
+
+
+        //Objeto que guarda el score
+
+        const objScore = {
+            ganadas: 0,
+            perdidas: 0,
+            empatadas: 0,
+            stats: {
+                ai_piedra: 0,
+                ai_papel: 0,
+                ai_tijera: 0,
+                user_piedra: 0,
+                user_papel: 0,
+                user_tijera: 0
+            }
+        };
+
+        const btnReset = document.querySelector(".btnReset");
+        btnReset.addEventListener("click", () => {
+            objScore.ganadas = 0;
+            objScore.perdidas = 0;
+            objScore.empatadas = 0;
+            objScore.stats = {
+                ai_piedra: 0,
+                ai_papel: 0,
+                ai_tijera: 0,
+                user_piedra: 0,
+                user_papel: 0,
+                user_tijera: 0,
+            };
+            showScore();
+            console.log("Reset");
+        });
+
+        console.log("text body: ", document.body.innerText);
+
+        /**
+        (usuario vale o piedra, o papel o tijera.)
+        **/
+        const jugar = usuario => {
+            const jugadorAI = elegirJugadorAI(); // devuelve piedra, papel o tijera.
+            let resultado = "";
+
+            if (jugadorAI == usuario) {
+                console.log('Empate');
+                resultado = 'Empate';
+                // utilización de operación ternaria en los siguientes pasos
+            } else if (usuario == 'piedra') { resultado = (jugadorAI == 'papel') ? "Perdiste" : "Ganaste";
+            } else if (usuario == 'papel') { resultado = (jugadorAI == 'papel') ? "Perdiste" : "Ganaste";
+            } else if (usuario == 'tijera') { resultado = (jugadorAI == 'tijera') ? "Perdiste" : "Ganaste";}
+
+            console.log(resultado);
+
+            // Stats de los Jugadores
+            //cada vez que el usuario o el AI tire X, se suma 1, y así sucesivamente
+            if (usuario == 'piedra') { objScore.stats.user_piedra++; }
+            if (usuario == 'papel') { objScore.stats.user_papel++; }
+            if (usuario == 'tijera') { objScore.stats.user_tijera++; }
+            if (jugadorAI == 'piedra') { objScore.stats.ai_piedra++; }
+            if (jugadorAI == 'papel') { objScore.stats.ai_papel++; }
+            if (jugadorAI == 'tijera') { objScore.stats.ai_tijera++; }
+
+            // Score
+            if (resultado == 'Empate') { objScore.empatadas++; }
+            if (resultado == 'Perdiste') { objScore.perdidas++; }
+            if (resultado == 'Ganaste') { objScore.ganadas++; }
+
+            txtResultado.innerHTML = `<h1>${resultado}</h1>Tu has tirado <b>${usuario.toUpperCase()}</b> y la AI ha tirado <b>${jugadorAI.toUpperCase()}</b>.`;
+
+            showScore();
+        }
+
+        /**
+         * Elije una opción al azar
+         * 
+         * @return {string} - una opción de la lista. ej: piedra, papel o tijeras.
+         * 
+         * */
+        function elegirJugadorAI() {
+            const opciones = ['piedra', 'papel', 'tijera']; //esta podria ser una variable global y no local, ya que se repite varias veces a lo largo del codigo
+            const numero = Math.floor(Math.random() * opciones.length);
+            return opciones[numero];
+        }
+
+        /**
+         * lo que hace esta funcion
+         * 
+         * Elije el valor al azar del jugador (piedra, papel o tijera)
+         * Realiza una partida cada decima de segundos
+         * */
+        function AIvsAI() {
+            const opciones = ['piedra', 'papel', 'tijera'];
+            //en este caso son dos argumentos, una que es una función y otra que es el 100.
+
+            // SETINTERVAL: es una funcion que va a ejecutar algo cierta cantidad de tiempos 
+            setInterval(function () {
+                //floor: es redondear hacia abajo, o 0 o 1 o 2. Obtiene un número al azar entre 0 y 2
+                const numero = Math.floor(Math.random() * opciones.length);
+                const usuario = opciones[numero];
+                jugar(usuario);
+            }, 100);
+        }
+
+        /**
+         * Imprimir en pantalla los valores, las estadísticas
+         * Llamar a gráfica ()
+         * (no devuelve ni recibe nada)
+         * */
+        function showScore() {
+
+            txtGanadas.innerHTML = objScore.ganadas;
+            txtPerdidas.innerHTML = objScore.perdidas;
+            txtEmpatadas.innerHTML = objScore.empatadas;
+
+
+            txtStats.innerHTML = `<p><h3>AI:</h3> ✊x${objScore.stats.ai_piedra} ✋x${objScore.stats.ai_papel} ✌x${objScore.stats.ai_tijera}</p>
+                                <p><h3>Usuario:</h3> ✊x${objScore.stats.user_piedra} ✋x${objScore.stats.user_papel} ✌x${objScore.stats.user_tijera}</p>`;
+            graficar();
+        }
+
+        /** 
+         * Función que calcula % de partidas ganadas y perdidas en porcentaje
+         * y las grafica usando 2 divs rojo y azul
+         * 
+         * @params no presenta
+         * @returns tampoco
+         * */
+        const graficar = () => {
+            const total = objScore.ganadas + objScore.perdidas; +objScore.empatadas;
+            const porcentajeGanadas = (objScore.ganadas / total) * 100;
+            const porcentajePerdidas = (objScore.perdidas / total) * 100;
+            const porcentajeEmpatadas = (objScore.empatadas / total) * 100;
+
+            const divGanadas = document.querySelector("div>div:nth-child(1)");
+            const divPerdidas = document.querySelector("div>div:nth-child(2)");
+            //const divPerdidas = document.querySelector("div>div:nth-child(3)");
+
+            divGanadas.innerHTML = "Ganadas: " + Math.round(porcentajeGanadas) + "%";
+            divPerdidas.innerHTML = "Perdidas: " + Math.round(porcentajePerdidas) + "%";
+            divGanadas.style.width = porcentajeGanadas + "%";
+            divPerdidas.style.width = porcentajePerdidas + "%";
+            divEmpatadas.style.width = porcentajeEmpatadas + "%";
+
+            if (total === 0) {
+                divGanadas.style.width = "0%";
+                divPerdidas.style.width = "0%";
+                divEmpatadas.style.width = "0%";
+                divGanadas.innerHTML = "Ganadas: 0%";
+                divPerdidas.innerHTML = "Perdidas: 0%";
+                divEmpatadas.innerHTML = "Empatadas: 0%";
+            };
+        }
+
+
+    </script>
+</body>
+
+</html>
