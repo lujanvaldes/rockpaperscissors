@@ -1,4 +1,4 @@
-# rockpaperscissors
+# rock paper scissors
 
 Revisar el pidra papel o tijera, y optimizar su código:
 - Comentar el código con lo que hace cada función
